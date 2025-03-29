@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>SmartShopper - Compare & Save</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        // Initialize with sample data
+        const sampleProducts = [
+          {
+            id: 1,
+            name: "Bose QuietComfort 45",
+            price: 22999,
+            retailer: "Amazon",
+            image: "amz.jpg",
+            rating: 4.8,
+            discount: 15,
+            lowest_price: 20499,
+            description: "Noise cancelling wireless headphones with 24-hour battery"
+          },
+          {
+            id: 2,
+            name: "Apple Watch Series 8",
+            price: 35999,
+            retailer: "Flipkart",
+            image: "flp.jpg",
+            rating: 4.9,
+            discount: 3,
+            lowest_price: 33499,
+            description: "GPS + Cellular, 45mm Midnight Aluminum Case"
+          },
+          {
+            id: 3,
+            name: "JBL Flip 6",
+            price: 10799,
+            retailer: "Snapdeal",
+            image: "snp.png",
+            rating: 4.7,
+            discount: 8,
+            lowest_price: 9999,
+            description: "Portable Bluetooth Speaker with IP67 Waterproof"
+          }
+        ];
+
+        renderProducts(sampleProducts);
+        setupEventHandlers();
+      });
+
+      function renderProducts(products) {
+        const productGrid = document.querySelector('.grid');
+        if (!productGrid) return;
+        
+        productGrid.innerHTML = products.map(product => `
+          <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
+            <div class="relative h-60">
+              <img src="images/${product.image}" alt="${product.name}" class="w-full h-full object-cover">
+              <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
+                <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-1 rounded">${product.retailer}</span>
+              </div>
+            </div>
+            <div class="p-6">
+              <div class="flex justify-between items-start mb-3">
+                <h3 class="font-bold text-xl">${product.name}</h3>
+                <div class="flex items-center">
+                  <i class="fas fa-star text-yellow-400 mr-1"></i>
+                  <span>${product.rating}</span>
+                </div>
+              </div>
+              <p class="text-gray-600 mb-4">${product.description}</p>
+              <div class="mb-4">
+                <div class="flex justify-between items-center mb-1">
+                  <span class="text-2xl font-bold">₹${product.price.toLocaleString()}</span>
+                  <span class="price-drop text-sm font-medium">
+                    <i class="fas fa-arrow-down mr-1"></i>${product.discount}% drop
+                  </span>
+                </div>
+                <div class="text-sm text-gray-500">Lowest: ₹${product.lowest_price.toLocaleString()}</div>
+              </div>
+              <div class="flex gap-3">
+                <button class="flex-1 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors view-deal" data-id="${product.id}">
+                  View Deal
+                </button>
+                <button class="w-12 flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors wishlist" data-id="${product.id}">
+                  <i class="far fa-heart text-gray-600"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      function setupEventHandlers() {
+        // Search functionality
+        const searchForm = document.querySelector('.relative');
+        if (searchForm) {
+          searchForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const input = searchForm.querySelector('input');
+            const query = input.value.trim();
+            const productGrid = document.querySelector('.grid');
+            
+            if (query) {
+              try {
+                // Show loading state
+                productGrid.innerHTML = `
+                  <div class="col-span-3 flex flex-col items-center justify-center py-12">
+                    <i class="fas fa-spinner fa-spin text-4xl text-blue-500 mb-4"></i>
+                    <p class="text-gray-600">Searching for "${query}"...</p>
+                  </div>
+                `;
+                
+                // Call search API
+                const response = await fetch(`http://localhost:3000/api/search?q=${encodeURIComponent(query)}`);
+                const results = await response.json();
+                
+                if (results.length > 0) {
+                  // Display results
+                  productGrid.innerHTML = results.map(product => `
+                    <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
+                      <div class="relative h-60">
+                        <img src="images/${product.image}" alt="${product.name}" class="w-full h-full object-cover">
+                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
+                          <span class="text-white font-medium">Best Price: ₹${Math.min(...product.prices.map(p => p.price)).toLocaleString()}</span>
+                        </div>
+                      </div>
+                      <div class="p-6">
+                        <h3 class="font-bold text-xl mb-2">${product.name}</h3>
+                        <p class="text-gray-600 mb-4">${product.description}</p>
+                        
+                        <div class="space-y-3">
+                          ${product.prices.map(offer => `
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                              <div class="flex items-center">
+                                <img src="images/${offer.retailer.toLowerCase()}.jpg" alt="${offer.retailer}" class="w-8 h-8 object-contain mr-3">
+                                <span class="font-medium">${offer.retailer}</span>
+                              </div>
+                              <div class="flex items-center">
+                                <span class="text-lg font-bold mr-4">₹${offer.price.toLocaleString()}</span>
+                                <a href="${offer.url}" target="_blank" 
+                                  class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm transition-colors flex items-center">
+                                  <i class="fas fa-external-link-alt mr-2"></i> View Deal
+                                </a>
+                              </div>
+                            </div>
+                          `).join('')}
+                        </div>
+                      </div>
+                    </div>
+                  `).join('');
+                } else {
+                  productGrid.innerHTML = `
+                    <div class="col-span-3 text-center py-12">
+                      <i class="fas fa-search text-4xl text-gray-300 mb-4"></i>
+                      <p class="text-gray-500">No products found for "${query}"</p>
+                      <p class="text-sm text-gray-400 mt-2">Try different keywords</p>
+                    </div>
+                  `;
+                }
+              } catch (error) {
+                productGrid.innerHTML = `
+                  <div class="col-span-3 text-center py-12">
+                    <i class="fas fa-exclamation-triangle text-4xl text-red-300 mb-4"></i>
+                    <p class="text-red-500">Error loading results</p>
+                    <p class="text-sm text-gray-500 mt-2">Please try again later</p>
+                  </div>
+                `;
+                console.error('Search error:', error);
+              }
+            }
+          });
+        }
+
+        // Wishlist buttons
+        document.addEventListener('click', (e) => {
+          if (e.target.closest('.wishlist')) {
+            const productId = e.target.closest('.wishlist').dataset.id;
+            const icon = e.target.closest('.wishlist').querySelector('i');
+            icon.classList.replace('far', 'fas');
+            icon.classList.replace('text-gray-600', 'text-red-500');
+            alert(`Added product ${productId} to wishlist`);
+          }
+          
+          // View Deal buttons
+          if (e.target.closest('.view-deal')) {
+            const productId = e.target.closest('.view-deal').dataset.id;
+            const product = sampleProducts.find(p => p.id == productId);
+            if (product) {
+              // Map retailer names to their URLs
+              const productUrls = {
+                1: 'https://www.amazon.in/dp/B098FKXT8N', // Bose QC45
+                2: 'https://www.flipkart.com/apple-watch-series-8/p/itm1aafd0f6a6b0d', // Apple Watch
+                3: 'https://www.snapdeal.com/product/jbl-flip-6-portable-bluetooth-speaker/675860561120' // JBL Flip 6
+              };
+              console.log('Product found:', product);
+              const productUrl = productUrls[product.id];
+              console.log(`Attempting to open product page for ${product.name} (ID: ${product.id})`);
+              console.log('Mapped URL:', productUrl);
+              if (productUrl) {
+                console.log(`Initiating redirect to: ${productUrl}`);
+                try {
+                  // Method 1: Create hidden link and click it
+                  const link = document.createElement('a');
+                  link.href = productUrl;
+                  link.target = '_blank';
+                  link.rel = 'noopener noreferrer';
+                  link.style.display = 'none';
+                  document.body.appendChild(link);
+                  // Add visual feedback
+                  const button = e.target.closest('.view-deal');
+                  button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Redirecting...';
+                  button.disabled = true;
+                  
+                  link.click();
+                  console.log('Primary redirect method executed for:', product.name);
+                  
+                  // Verify success after delay
+                  setTimeout(() => {
+                    let success = false;
+                    let fallbackUsed = '';
+                    
+                    // Check if new tab was opened
+                    try {
+                      const testWindow = window.open('', '_blank');
+                      success = testWindow && !testWindow.closed;
+                      if (testWindow) testWindow.close();
+                    } catch (e) {
+                      console.error('Popup check error:', e);
+                    }
+                    
+                    if (!success) {
+                      fallbackUsed = 'window.open';
+                      console.log('Using fallback:', fallbackUsed);
+                      try {
+                        const newWindow = window.open(productUrl, '_blank');
+                        if (!newWindow || newWindow.closed) {
+                          fallbackUsed = 'location.href';
+                          console.log('Using final fallback:', fallbackUsed);
+                          window.location.href = productUrl;
+                        }
+                      } catch (e) {
+                        console.error('Fallback failed:', e);
+                      }
+                    }
+                    
+                    // Update UI based on result
+                    button.innerHTML = success ? 
+                      '<i class="fas fa-check-circle mr-2"></i> Opened' :
+                      `<i class="fas fa-external-link-alt mr-2"></i> Try Again (${fallbackUsed})`;
+                    button.disabled = false;
+                    
+                    // Cleanup
+                    document.body.removeChild(link);
+                  }, 500);
+                  
+                } catch (error) {
+                  console.error('Redirect error:', error);
+                  window.location.href = productUrl;
+                }
+              } else {
+                console.error(`No URL mapped for retailer: ${product.retailer}`);
+                alert(`Could not find retailer website for ${product.retailer}`);
+              }
+            } else {
+              alert('Product not found');
+            }
+          }
+        });
+      }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-card {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+        .price-drop { color: #10B981; }
+        .price-rise { color: #EF4444; }
+        .chart-container {
+            height: 200px;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- Navigation -->
+    <nav class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white shadow-xl">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <i class="fas fa-percentage text-2xl"></i>
+                <span class="text-2xl font-bold tracking-tight">SmartShopper</span>
+            </div>
+            <div class="hidden md:flex space-x-8 items-center">
+                <a href="#" class="hover:text-blue-200 transition-colors">Home</a>
+                <a href="#" class="hover:text-blue-200 transition-colors">Categories</a>
+                <a href="#" class="hover:text-blue-200 transition-colors">Deals</a>
+                <a href="#" class="hover:text-blue-200 transition-colors">Price Alerts</a>
+                <button class="bg-white text-blue-600 px-4 py-2 rounded-full font-medium hover:bg-blue-50 transition-colors">
+                    Sign In
+                </button>
+            </div>
+            <button class="md:hidden text-xl">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="bg-gradient-to-br from-blue-50 to-indigo-50 py-16">
+        <div class="container mx-auto px-4 text-center">
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-800 mb-6">Find the Best Prices Across Stores</h1>
+            <p class="text-xl text-gray-600 max-w-2xl mx-auto mb-8">
+                Compare prices from Amazon, Flipkart, Snapdeal and more to save money on every purchase.
+            </p>
+            <div class="max-w-2xl mx-auto relative">
+                <input type="text" placeholder="Search for products..." 
+                    class="w-full px-6 py-4 rounded-full shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <button class="absolute right-2 top-2 bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition-colors">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-12">
+        <!-- Filters -->
+        <div class="flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
+            <h2 class="text-2xl font-bold text-gray-800">Top Deals This Week</h2>
+            <div class="flex flex-wrap gap-3">
+                <select class="bg-white border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option>All Categories</option>
+                    <option>Electronics</option>
+                    <option>Fashion</option>
+                    <option>Home & Kitchen</option>
+                </select>
+                <select class="bg-white border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option>Sort By: Best Match</option>
+                    <option>Price: Low to High</option>
+                    <option>Price: High to Low</option>
+                    <option>Biggest Savings</option>
+                </select>
+                <button class="flex items-center gap-2 bg-white border border-gray-300 rounded-lg px-4 py-2 hover:bg-gray-50 transition-colors">
+                    <i class="fas fa-sliders-h"></i>
+                    <span>More Filters</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Product Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Product Card 1 -->
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow animate-card" style="animation-delay: 0.1s">
+                <div class="relative h-60">
+                    <img src="images/amz.jpg" alt="Wireless Headphones" class="w-full h-full object-cover">
+                    <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
+                        <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-1 rounded">Amazon</span>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div class="flex justify-between items-start mb-3">
+                        <h3 class="font-bold text-xl">Bose QuietComfort 45</h3>
+                        <div class="flex items-center">
+                            <i class="fas fa-star text-yellow-400 mr-1"></i>
+                            <span>4.8</span>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 mb-4">Noise cancelling wireless headphones with 24-hour battery</p>
+                    
+                    <div class="mb-4">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-2xl font-bold">₹22,999</span>
+                            <span class="price-drop text-sm font-medium"><i class="fas fa-arrow-down mr-1"></i>15% drop</span>
+                        </div>
+                        <div class="text-sm text-gray-500">Lowest: ₹20,499 (2 weeks ago)</div>
+                    </div>
+
+                    <div class="chart-container mb-4 bg-gray-100 rounded-lg">
+                        <!-- Price chart would go here -->
+                        <div class="flex items-center justify-center h-full text-gray-400">
+                            <i class="fas fa-chart-line text-3xl"></i>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-3">
+                        <button class="flex-1 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                            View Deal
+                        </button>
+                        <button class="w-12 flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
+                            <i class="far fa-heart text-gray-600"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Product Card 2 -->
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow animate-card" style="animation-delay: 0.2s">
+                <div class="relative h-60">
+                    <img src="images/flp.jpg" alt="Smart Watch" class="w-full h-full object-cover">
+                    <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
+                        <span class="bg-red-100 text-red-800 text-xs font-semibold px-2 py-1 rounded">Flipkart</span>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div class="flex justify-between items-start mb-3">
+                        <h3 class="font-bold text-xl">Apple Watch Series 8</h3>
+                        <div class="flex items-center">
+                            <i class="fas fa-star text-yellow-400 mr-1"></i>
+                            <span>4.9</span>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 mb-4">GPS + Cellular, 45mm Midnight Aluminum Case</p>
+                    
+                    <div class="mb-4">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-2xl font-bold">₹35,999</span>
+                            <span class="price-rise text-sm font-medium"><i class="fas fa-arrow-up mr-1"></i>3% rise</span>
+                        </div>
+                        <div class="text-sm text-gray-500">Lowest: ₹33,499 (1 month ago)</div>
+                    </div>
+
+                    <div class="chart-container mb-4 bg-gray-100 rounded-lg">
+                        <!-- Price chart would go here -->
+                        <div class="flex items-center justify-center h-full text-gray-400">
+                            <i class="fas fa-chart-line text-3xl"></i>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-3">
+                        <button class="flex-1 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                            View Deal
+                        </button>
+                        <button class="w-12 flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
+                            <i class="far fa-heart text-gray-600"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Product Card 3 -->
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow animate-card" style="animation-delay: 0.3s">
+                <div class="relative h-60">
+                    <img src="images/snp.png" alt="Bluetooth Speaker" class="w-full h-full object-cover">
+                    <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
+                        <span class="bg-yellow-100 text-yellow-800 text-xs font-semibold px-2 py-1 rounded">Snapdeal</span>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div class="flex justify-between items-start mb-3">
+                        <h3 class="font-bold text-xl">JBL Flip 6</h3>
+                        <div class="flex items-center">
+                            <i class="fas fa-star text-yellow-400 mr-1"></i>
+                            <span>4.7</span>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 mb-4">Portable Bluetooth Speaker with IP67 Waterproof</p>
+                    
+                    <div class="mb-4">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-2xl font-bold">₹10,799</span>
+                            <span class="price-drop text-sm font-medium"><i class="fas fa-arrow-down mr-1"></i>8% drop</span>
+                        </div>
+                        <div class="text-sm text-gray-500">Lowest: ₹9,999 (3 days ago)</div>
+                    </div>
+
+                    <div class="chart-container mb-4 bg-gray-100 rounded-lg">
+                        <!-- Price chart would go here -->
+                        <div class="flex items-center justify-center h-full text-gray-400">
+                            <i class="fas fa-chart-line text-3xl"></i>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-3">
+                        <button class="flex-1 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                            View Deal
+                        </button>
+                        <button class="w-12 flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
+                            <i class="far fa-heart text-gray-600"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12 mt-16">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4 flex items-center">
+                        <i class="fas fa-percentage mr-2"></i>
+                        SmartShopper
+                    </h3>
+                    <p class="text-gray-400">Your smart shopping companion helping you save money on every purchase.</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-lg mb-4">Shop</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Electronics</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Fashion</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Home & Kitchen</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Beauty</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-lg mb-4">Company</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">About Us</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Careers</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Blog</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Press</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-lg mb-4">Support</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Help Center</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Contact Us</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Privacy Policy</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Terms of Service</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-gray-400 mb-4 md:mb-0">© 2023 SmartShopper. All rights reserved.</p>
+                <div class="flex space-x-6">
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors text-xl">
+                        <i class="fab fa-facebook"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors text-xl">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors text-xl">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors text-xl">
+                        <i class="fab fa-linkedin"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
