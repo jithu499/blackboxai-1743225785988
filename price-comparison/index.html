@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartShopper - Price Comparison</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .price-drop { color: #10B981; }
+        .price-rise { color: #EF4444; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-indigo-600 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fas fa-search-dollar text-2xl"></i>
+                <span class="text-xl font-bold">SmartShopper</span>
+            </div>
+            <div class="hidden md:flex space-x-6">
+                <a href="#" class="hover:text-indigo-200">Home</a>
+                <a href="#" class="hover:text-indigo-200">Trending</a>
+                <a href="#" class="hover:text-indigo-200">Deals</a>
+                <a href="#" class="hover:text-indigo-200">Saved</a>
+            </div>
+            <button class="md:hidden">
+                <i class="fas fa-bars text-xl"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- Search Section -->
+        <section class="mb-10">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h1 class="text-3xl font-bold text-gray-800 mb-4">Find the Best Prices</h1>
+                <div class="flex flex-col md:flex-row gap-4">
+                    <input type="text" placeholder="Search for products..." 
+                           class="flex-grow px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <button class="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition-colors">
+                        <i class="fas fa-search mr-2"></i> Search
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Product Comparison -->
+        <section>
+            <h2 class="text-2xl font-semibold text-gray-800 mb-6">Popular Products</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Product Card 1 -->
+                <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+                    <div class="relative">
+                        <img src="smartshopper/amz.jpg" alt="Product" class="w-full h-48 object-cover">
+                        <span class="absolute top-2 right-2 bg-indigo-100 text-indigo-800 text-xs font-semibold px-2 py-1 rounded">Amazon</span>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-bold text-lg mb-2">Wireless Headphones</h3>
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-2xl font-bold">$89.99</span>
+                            <span class="price-drop"><i class="fas fa-arrow-down mr-1"></i>12%</span>
+                        </div>
+                        <div class="flex justify-between text-sm text-gray-500 mb-3">
+                            <span>Lowest: $79.99</span>
+                            <span>30 days ago</span>
+                        </div>
+                        <button class="w-full bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700 transition-colors">
+                            Compare Prices
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Product Card 2 -->
+                <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+                    <div class="relative">
+                        <img src="smartshopper/flp.jpg" alt="Product" class="w-full h-48 object-cover">
+                        <span class="absolute top-2 right-2 bg-red-100 text-red-800 text-xs font-semibold px-2 py-1 rounded">Flipkart</span>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-bold text-lg mb-2">Smart Watch</h3>
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-2xl font-bold">$129.99</span>
+                            <span class="price-rise"><i class="fas fa-arrow-up mr-1"></i>5%</span>
+                        </div>
+                        <div class="flex justify-between text-sm text-gray-500 mb-3">
+                            <span>Lowest: $119.99</span>
+                            <span>45 days ago</span>
+                        </div>
+                        <button class="w-full bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700 transition-colors">
+                            Compare Prices
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Product Card 3 -->
+                <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+                    <div class="relative">
+                        <img src="smartshopper/snp.png" alt="Product" class="w-full h-48 object-cover">
+                        <span class="absolute top-2 right-2 bg-yellow-100 text-yellow-800 text-xs font-semibold px-2 py-1 rounded">Snapdeal</span>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-bold text-lg mb-2">Bluetooth Speaker</h3>
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-2xl font-bold">$49.99</span>
+                            <span class="price-drop"><i class="fas fa-arrow-down mr-1"></i>8%</span>
+                        </div>
+                        <div class="flex justify-between text-sm text-gray-500 mb-3">
+                            <span>Lowest: $45.99</span>
+                            <span>15 days ago</span>
+                        </div>
+                        <button class="w-full bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700 transition-colors">
+                            Compare Prices
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8 mt-12">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between">
+                <div class="mb-6 md:mb-0">
+                    <h3 class="text-xl font-bold mb-4">SmartShopper</h3>
+                    <p class="text-gray-400">Find the best prices across all major retailers.</p>
+                </div>
+                <div class="grid grid-cols-2 gap-8">
+                    <div>
+                        <h4 class="font-semibold mb-4">Quick Links</h4>
+                        <ul class="space-y-2">
+                            <li><a href="#" class="text-gray-400 hover:text-white">Home</a></li>
+                            <li><a href="#" class="text-gray-400 hover:text-white">Trending</a></li>
+                            <li><a href="#" class="text-gray-400 hover:text-white">Deals</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold mb-4">Support</h4>
+                        <ul class="space-y-2">
+                            <li><a href="#" class="text-gray-400 hover:text-white">Contact</a></li>
+                            <li><a href="#" class="text-gray-400 hover:text-white">FAQ</a></li>
+                            <li><a href="#" class="text-gray-400 hover:text-white">Privacy</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
+                <p>© 2023 SmartShopper. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
